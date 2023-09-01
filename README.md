@@ -6,8 +6,6 @@ Doodle Jump is a simple and fun vertical platformer game built using the SimpleG
 
 1. **Installation:** Before playing the game, make sure you have the required libraries installed:
     - `SimpleGUICS2Pygame`: A library that allows running SimpleGUI code using Pygame. Install it with `pip install SimpleGUICS2Pygame`.
-    - `pygame`: A library for game development. Install it with `pip install pygame`.
-
 2. **Running the Game:** To start the game, run the `doodle_jump.py` script. A game window will open, displaying the Doodle Jump game.
 
 3. **Game Controls:** The game can be controlled using the arrow keys on your keyboard:
