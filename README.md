@@ -17,7 +17,7 @@ Doodle Jump is a simple and fun vertical platformer game built using the SimpleG
 
 5. **Gameplay:** Platforms appear randomly on the screen, and you must strategically use the arrow keys to move the doodle character left or right to land on the platforms. Use the doodle's automatic jumping to your advantage to reach higher platforms.
 
-## Customization and Improvement
+## Future Scopes and Customization 
 
 This implementation of Doodle Jump is a basic version. You can enhance the game by adding new features and improvements, such as:
 - Obstacles that the doodle character must avoid.
