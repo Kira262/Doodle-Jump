@@ -1,56 +1,94 @@
 import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import random
-import math
 
-WIDTH = 400
-HEIGHT = 600
-STAGE_WIDTH = 80
-STAGE_HEIGHT = 10
-JUMP_VELOCITY = -10
-GRAVITY = 0.5
 
-doodle_pos = [WIDTH / 2, HEIGHT - 50]
-doodle_vel = [0, JUMP_VELOCITY]
-platforms = [[100, 500]]
-doodle_image = simplegui.load_image('doodle.png')
-score = 0
+w, h = 800, 600
+pl[0].left, pl[0].right = 0, w
+num_plat = 1000
+pl = [platform() for i in range(0, num_plat)]
+offset = [0, 0]
+dd = doodle(camera([w//2, h-200]))
+
+
+def camera(pos):
+    return [pos[0]-offset[0], pos[1]-offset[1]]
+
+
+def height(y):
+
+    global h
+    return h-y
+
+
+class doodle:
+    rebound = 7
+
+    def __init__(self, pos):
+        self.pos = pos
+        self.vel = [0, 0]
+
+    def nudge(self, x):
+        self.vel[0] += x
+
+    def update(self):
+        self.pos[0] = (self.pos[0] + self.vel[0]) % w
+        oldy = int(min(height(self.pos[1])//100, num_plat - 1))
+        newy = int(min(height(self.pos[1]+self.vel[1])//100, num_plat - 1))
+        if oldy != newy and self.vel[1] > 0 and pl[oldy].exists and pl[oldy].left < self.pos[0] < pl[oldy].right:
+            self.vel[1] = min(-self.vel[1], -doodle.rebound)
+            if random.random() > .7:
+                pl[oldy].exists = False
+        else:
+            self.pos[1] += self.vel[1]
+        self.vel[1] += .1
+        clearance = 300
+        if self.pos[1]-offset[1] < clearance:
+            offset[1] = self.pos[1] - clearance
+        if self.pos[1]-offset[1] > h+50:
+            offset[0], offset[1] = 0, 0
+            dd.pos[0], dd.pos[1] = w//2, h-200
+            dd.vel[1] = 0
+            for i in range(0, num_plat):
+                pl[i].exists = True
+
+
+class platform:
+    def __init__(self):
+        global w
+        width = random.randrange(100, 160)
+        self.left = random.randrange(25, w-(25+width))
+        self.right = self.left + width
+        self.exists = True
+
+
+def keydown(key):
+    if key == simplegui.KEY_MAP["left"]:
+        dd.nudge(-2.5)
+    elif key == simplegui.KEY_MAP["right"]:
+        dd.nudge(2.5)
+
+
+def keyup(key):
+    if key == simplegui.KEY_MAP["left"]:
+        dd.nudge(2.5)
+    elif key == simplegui.KEY_MAP["right"]:
+        dd.nudge(-2.5)
 
 
 def draw(canvas):
-    global platforms, doodle_pos, doodle_vel, score
-
-    Frame.set_canvas_background("white")
-
-    canvas.draw_image(doodle_image, (20, 20), (40, 40), doodle_pos, (40, 40))
-    canvas.draw_text("Score: " + str(score), (10, 20), 20, 'White')
-
-    doodle_vel[1] += GRAVITY
-    doodle_pos[0] += doodle_vel[0]
-    doodle_pos[1] += doodle_vel[1]
-
-    for platform in platforms:
-        canvas.draw_polygon([(platform[0], platform[1]),
-                             (platform[0] + STAGE_WIDTH, platform[1]),
-                             (platform[0] + STAGE_WIDTH,
-                              platform[1] + STAGE_HEIGHT),
-                             (platform[0], platform[1] + STAGE_HEIGHT)], 1, 'black', 'black')
-
-    for platform in platforms:
-        if doodle_pos[1] + 20 > platform[1] and doodle_pos[1] + 20 < platform[1] + STAGE_HEIGHT:
-            if doodle_pos[0] > platform[0] and doodle_pos[0] < platform[0] + STAGE_WIDTH:
-                doodle_vel[1] = JUMP_VELOCITY
-                score += 1
-
-    platforms = [platform for platform in platforms if platform[1]
-                 > -STAGE_HEIGHT]
-
-    if random.random() < 0.02:
-        x_pos = random.randint(0, WIDTH - STAGE_WIDTH)
-        y_pos = platforms[-1][1] - random.randint(50, 200)
-        platforms.append([x_pos, y_pos])
+    dd.update()
+    canvas.draw_circle(camera(dd.pos), 5, 2, "White")
+    for steps in range(100*int(offset[1]//100), int(h+offset[1]), 100):
+        ind = height(steps)//100
+        if ind < num_plat and pl[ind].exists:
+            canvas.draw_line(camera([pl[ind].left, steps]), camera(
+                [pl[ind].right, steps]), 4, "Yellow")
+        canvas.draw_text(str(height(steps)), camera(
+            [w-50, steps]), 12, "White")
 
 
-Frame = simplegui.create_frame("Doodle Jump", WIDTH, HEIGHT)
-Frame.set_draw_handler(draw)
-
-Frame.start()
+frame = simplegui.create_frame("Doodle Jump", w, h)
+frame.set_keydown_handler(keydown)
+frame.set_keyup_handler(keyup)
+frame.set_draw_handler(draw)
+frame.start()
