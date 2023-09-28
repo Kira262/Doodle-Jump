@@ -1,13 +1,10 @@
 import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import random
 
-
 w, h = 800, 600
-pl[0].left, pl[0].right = 0, w
+game_started = False
 num_plat = 1000
-pl = [platform() for i in range(0, num_plat)]
 offset = [0, 0]
-dd = doodle(camera([w//2, h-200]))
 
 
 def camera(pos):
@@ -87,8 +84,33 @@ def draw(canvas):
             [w-50, steps]), 12, "White")
 
 
+def start_or_reset_game():
+    global game_started, offset
+    if not game_started:
+        game_started = True
+        frame.set_draw_handler(draw)
+        frame.set_keydown_handler(keydown)
+        frame.set_keyup_handler(keyup)
+
+        start_button.set_text("Reset Game")
+    else:
+        game_started = False
+        offset = [0, 0]
+        dd.pos[0], dd.pos[1] = w // 2, h - 200
+        dd.vel[1] = 0
+        for i in range(0, num_plat):
+            pl[i].exists = True
+        frame.set_draw_handler(draw)
+
+        start_button.set_text("Start Game")
+
+
 frame = simplegui.create_frame("Doodle Jump", w, h)
-frame.set_keydown_handler(keydown)
-frame.set_keyup_handler(keyup)
-frame.set_draw_handler(draw)
+frame.add_label("Doodle Jumping Game")
+start_button = frame.add_button("Start Game", start_or_reset_game)
+
+pl = [platform() for i in range(0, num_plat)]
+pl[0].left, pl[0].right = 0, w
+dd = doodle(camera([w//2, h-200]))
+
 frame.start()
