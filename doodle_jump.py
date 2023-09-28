@@ -3,11 +3,16 @@ import random
 
 w, h = 800, 600
 game_started = False
+
+# number of platforms
 num_plat = 1000
+
+# camera movement.
 offset = [0, 0]
 
 
 def camera(pos):
+    # takes a position pos and subtracts the offset from it ,follows the player character.
     return [pos[0]-offset[0], pos[1]-offset[1]]
 
 
@@ -25,12 +30,21 @@ class doodle:
         self.vel = [0, 0]
 
     def nudge(self, x):
+        # horizontal velocity.
         self.vel[0] += x
 
+    # character's position and handles collisions with platforms and gravity.
     def update(self):
+
         self.pos[0] = (self.pos[0] + self.vel[0]) % w
+
+        # current pos
         oldy = int(min(height(self.pos[1])//100, num_plat - 1))
+
+        # next pos
         newy = int(min(height(self.pos[1]+self.vel[1])//100, num_plat - 1))
+
+        #  handling collision or interaction between objects
         if oldy != newy and self.vel[1] > 0 and pl[oldy].exists and pl[oldy].left < self.pos[0] < pl[oldy].right:
             self.vel[1] = min(-self.vel[1], -doodle.rebound)
             if random.random() > .7:
@@ -38,6 +52,7 @@ class doodle:
         else:
             self.pos[1] += self.vel[1]
         self.vel[1] += .1
+        # camera's vertical position and resetting the game state when certain conditions are met
         clearance = 300
         if self.pos[1]-offset[1] < clearance:
             offset[1] = self.pos[1] - clearance
@@ -57,6 +72,8 @@ class platform:
         self.right = self.left + width
         self.exists = True
 
+# handle key events for moving the player character left and right by adjusting its velocity
+
 
 def keydown(key):
     if key == simplegui.KEY_MAP["left"]:
@@ -73,15 +90,16 @@ def keyup(key):
 
 
 def draw(canvas):
+    frame.set_canvas_background("black")
     dd.update()
-    canvas.draw_circle(camera(dd.pos), 5, 2, "White")
+    canvas.draw_circle(camera(dd.pos), 10, 2, "white")
     for steps in range(100*int(offset[1]//100), int(h+offset[1]), 100):
         ind = height(steps)//100
         if ind < num_plat and pl[ind].exists:
             canvas.draw_line(camera([pl[ind].left, steps]), camera(
-                [pl[ind].right, steps]), 4, "Yellow")
+                [pl[ind].right, steps]), 6, "limegreen")
         canvas.draw_text(str(height(steps)), camera(
-            [w-50, steps]), 12, "White")
+            [w-50, steps]), 15, "white")
 
 
 def start_or_reset_game():
@@ -107,10 +125,14 @@ def start_or_reset_game():
 
 frame = simplegui.create_frame("Doodle Jump", w, h)
 frame.add_label("Doodle Jumping Game")
+
 start_button = frame.add_button("Start Game", start_or_reset_game)
 
+# store instances of the platform
 pl = [platform() for i in range(0, num_plat)]
 pl[0].left, pl[0].right = 0, w
+
+# instance of the doodle class, representing the player-controlled character.
 dd = doodle(camera([w//2, h-200]))
 
 frame.start()
